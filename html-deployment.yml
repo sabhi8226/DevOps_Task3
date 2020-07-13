@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-html
+  labels:
+    app: web-html
+spec:
+  ports:
+    - port: 80
+      nodePort: 30100
+  selector:
+    app: web-html
+    tier: frontend
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-html
+  labels:
+    app: web-html
+spec:
+  selector:
+    matchLabels:
+      app: web-html
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: web-html
+        tier: frontend
+    spec:
+      containers:
+      - image: httpd
+        name: web-html
+        ports:
+        - containerPort: 80
+          name: web-html
+        volumeMounts:
+        - name: web-html-persistent-storage
+          mountPath: /usr/local/apache2/htdocs/
+      volumes:
+      - name: web-html-persistent-storage
+        persistentVolumeClaim:
+          claimName: html-pv-claim
