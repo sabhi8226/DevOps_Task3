@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-php
+  labels:
+    app: web-php
+spec:
+  ports:
+    - port: 80
+      nodePort: 30101
+  selector:
+    app: web-php
+    tier: frontend
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-php
+  labels:
+    app: web-php
+spec:
+  selector:
+    matchLabels:
+      app: web-php
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: web-php
+        tier: frontend
+    spec:
+      containers:
+      - image: vimal13/apache-webserver-php
+        name: web-php
+        ports:
+        - containerPort: 80
+          name: web-php
+        volumeMounts:
+        - name: web-php-persistent-storage
+          mountPath: /var/www/html/
+      volumes:
+      - name: web-php-persistent-storage
+        persistentVolumeClaim:
+          claimName: php-pv-claim
